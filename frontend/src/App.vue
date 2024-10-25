@@ -1,24 +1,52 @@
 <script setup>
-import { ref } from 'vue';
-import CommentSection from './components/CommentSection.vue';
+import { ref } from "vue";
+import CommentSection from "./components/CommentSection.vue";
 
-const userId = ref('');
+const userId = ref("");
 const users = ref(null);
-const newEmail = ref('');
+const newEmail = ref("");
 
 const getUser = async () => {
-  const response = await fetch(`http://localhost:3000/api/user/${userId.value}`);
-  users.value = await response.json();
+  try {
+    const response = await fetch(
+      `http://localhost:4000/api/user/${userId.value}`
+    );
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    users.value = await response.json();
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    alert("Failed to fetch user information.");
+  }
 };
 
 const changeEmail = async () => {
-  await fetch('http://localhost:3000/api/change-email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: `email=${newEmail.value}`,
-  });
+  // Batasi panjang email
+  if (newEmail.value.length > 256) {
+    alert("Email address is too long.");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `http://localhost:4000/api/user/${userId.value}/change-email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: newEmail.value }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to update email.");
+    }
+    alert("Email successfully updated.");
+  } catch (error) {
+    alert(error.message);
+  }
 };
 </script>
 
@@ -32,7 +60,6 @@ const changeEmail = async () => {
     <div v-if="users">
       <template v-for="user in users">
         <h2>{{ user.name }}</h2>
-        <p>Email: {{ user.email }}</p>
         <hr />
       </template>
     </div>
