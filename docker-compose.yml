@@ -1,0 +1,24 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # Expose frontend on port 8080
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000" # Expose backend on port 4000
+    networks:
+      - app-network
+    environment:
+      NAME: wepe
+
+networks:
+  app-network:
+    driver: bridge
